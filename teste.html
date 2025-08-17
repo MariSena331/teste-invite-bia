@@ -24,9 +24,9 @@
         --er-bg: #fef2f2;
         --er-bd: #fecaca;
         --er-fg: #991b1b;
-        --btn-red: #dc2626; /* vermelho */
+        --btn-red: #dc2626;
         --btn-red-hover: #b91c1c;
-        --measure: 46ch; /* largura “menor” usada pelo campo e pela mensagem */
+        --measure: 46ch;
       }
 
       html,
@@ -52,6 +52,12 @@
         align-items: start;
       }
 
+      /* Coluna direita empilhada: countdown + formulário */
+      .stack {
+        display: grid;
+        gap: 16px;
+      }
+
       /* imagem decorativa à esquerda */
       .art {
         display: flex;
@@ -66,12 +72,11 @@
         filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.12));
       }
 
-      /* cartão do formulário */
+      /* cartão */
       .card {
         background: #fff;
-        border: 0; /* <<< sem borda ao redor do formulário */
+        border: 0;
         border-radius: var(--card-radius);
-        /* box-shadow: var(--shadow); */
         padding: 22px;
       }
 
@@ -79,16 +84,50 @@
         font-size: 1.55rem;
         line-height: 1.3;
         margin: 0 0 12px 0;
-        font-weight: 700; /* Open Sans Bold */
+        font-weight: 700;
       }
 
+      /* ------- Countdown ------- */
+      .count-title {
+        margin: 0 0 10px 0;
+        font-size: 1.25rem;
+      }
+      .countdown {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(70px, 1fr));
+        gap: 12px;
+      }
+      .tile {
+        border: 1px solid var(--card-border);
+        border-radius: var(--card-radius);
+        padding: 16px 10px;
+        text-align: center;
+        box-shadow: var(--shadow);
+      }
+      .tile span {
+        display: block;
+        font-weight: 700;
+        font-size: clamp(1.8rem, 4.5vw, 2.6rem);
+        line-height: 1;
+      }
+      .tile small {
+        display: block;
+        margin-top: 6px;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .date-note {
+        margin: 10px 0 0 0;
+        color: #6b7280;
+      }
+
+      /* ------- Form -------- */
       label {
         display: block;
         font-weight: 400;
         margin: 14px 0 6px;
       }
-
-      /* Campo de nome: largura menor, igual à “measure” (também usada na última linha e na mensagem) */
       .measure {
         max-width: var(--measure);
       }
@@ -105,7 +144,6 @@
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
       }
 
-      /* radio */
       .row {
         display: flex;
         gap: 20px;
@@ -118,7 +156,6 @@
         gap: 8px;
       }
 
-      /* botão vermelho */
       button {
         margin-top: 14px;
         padding: 10px 16px;
@@ -137,7 +174,6 @@
         cursor: not-allowed;
       }
 
-      /* mensagens */
       .msg {
         margin-top: 14px;
         padding: 10px;
@@ -155,7 +191,6 @@
         color: var(--er-fg);
         border: 1px solid var(--er-bd);
       }
-
       .help {
         color: #6b7280;
         font-size: 0.95rem;
@@ -169,10 +204,15 @@
         }
         .art {
           order: -1;
-        } /* imagem acima no mobile */
+        }
         .art img {
           max-width: 380px;
           margin: 0 auto;
+        }
+      }
+      @media (max-width: 420px) {
+        .countdown {
+          grid-template-columns: repeat(2, 1fr);
         }
       }
     </style>
@@ -187,97 +227,120 @@
         />
       </div>
 
-      <!-- Lado direito: cartão do formulário -->
-      <div class="card">
-        <h1>Confirmar de Presença</h1>
-
-        <form id="rsvpForm" novalidate>
-          <div class="measure">
-            <label for="name">Nome e Sobrenome</label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              placeholder="Ex.: Ana Clara Santos"
-              required
-            />
+      <!-- Lado direito: contagem + formulário -->
+      <div class="stack">
+        <!-- Cartão da contagem regressiva -->
+        <div class="card countdown-card" aria-live="polite">
+          <h2 class="count-title">Faltam</h2>
+          <div class="countdown" id="countdown">
+            <div class="tile"><span id="dd">--</span><small>Dias</small></div>
+            <div class="tile"><span id="hh">--</span><small>Horas</small></div>
+            <div class="tile"><span id="mm">--</span><small>Min</small></div>
+            <div class="tile"><span id="ss">--</span><small>Seg</small></div>
           </div>
+          <p class="date-note">Até <strong id="dateLabel">—</strong></p>
+        </div>
 
-          <label style="margin-top: 16px">Você vai comparecer?</label>
-          <div class="row" role="radiogroup" aria-label="Você vai comparecer?">
-            <label class="opt">
-              <input type="radio" name="answer" value="Sim" required />
-              <span>Sim</span>
-            </label>
-            <label class="opt">
-              <input type="radio" name="answer" value="Não" required />
-              <span>Não</span>
-            </label>
-          </div>
+        <!-- Cartão do formulário -->
+        <div class="card">
+          <h1>Confirmar de Presença</h1>
 
-          <button id="submitBtn" type="submit">Enviar</button>
+          <form id="rsvpForm" novalidate>
+            <div class="measure">
+              <label for="name">Nome e Sobrenome</label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                placeholder="Ex.: Ana Clara Santos"
+                required
+              />
+            </div>
 
-          <!-- mensagem com a mesma largura do campo de nome -->
-          <div id="message" class="msg measure"></div>
+            <label style="margin-top: 16px">Você vai comparecer?</label>
+            <div
+              class="row"
+              role="radiogroup"
+              aria-label="Você vai comparecer?"
+            >
+              <label class="opt">
+                <input type="radio" name="answer" value="Sim" required />
+                <span>Sim</span>
+              </label>
+              <label class="opt">
+                <input type="radio" name="answer" value="Não" required />
+                <span>Não</span>
+              </label>
+            </div>
 
-          <p class="help measure">
-            Obs.: o nome deve constar na lista de convidados.
-          </p>
-        </form>
+            <button id="submitBtn" type="submit">Enviar</button>
+
+            <div id="message" class="msg measure"></div>
+            <p class="help measure">
+              Obs.: o nome deve constar na lista de convidados.
+            </p>
+          </form>
+        </div>
       </div>
     </div>
 
-    <!-- Integração com Apps Script -->
+    <!-- Countdown (HTML + JS puro) -->
     <script>
-      const form = document.getElementById("rsvpForm");
-      const btn = document.getElementById("submitBtn");
-      const box = document.getElementById("message");
+      (function () {
+        // >>> ALTERE AQUI: data/hora do casamento (timezone São Paulo)
+        const targetIso = "2025-10-18T16:00:00-03:00";
+        const target = new Date(targetIso);
 
-      function showMsg(text, type) {
-        box.textContent = text;
-        box.className = "msg measure " + (type === "ok" ? "ok" : "err");
-        box.style.display = "block";
-      }
-
-      form.addEventListener("submit", function (e) {
-        e.preventDefault();
-        box.style.display = "none";
-
-        const name = (document.getElementById("name").value || "").trim();
-        const answer = new FormData(form).get("answer") || "";
-
-        if (!name || !answer) {
-          showMsg("Preencha nome completo e selecione Sim/Não.", "err");
-          return;
+        // Exibe a data formatada
+        const dateLabel = document.getElementById("dateLabel");
+        if (dateLabel) {
+          try {
+            dateLabel.textContent = target.toLocaleString("pt-BR", {
+              timeZone: "America/Sao_Paulo",
+            });
+          } catch (_) {
+            dateLabel.textContent = target.toLocaleString("pt-BR");
+          }
         }
 
-        btn.disabled = true;
-        btn.textContent = "Enviando...";
+        // Elementos
+        const dd = document.getElementById("dd");
+        const hh = document.getElementById("hh");
+        const mm = document.getElementById("mm");
+        const ss = document.getElementById("ss");
+        const title = document.querySelector(".countdown-card .count-title");
 
-        // Chama a função do Code.gs
-        google.script.run
-          .withSuccessHandler((res) => {
-            if (res && res.found) {
-              showMsg("Resposta registrada com sucesso!", "ok");
-              form.reset();
-            } else {
-              showMsg("Você não está na lista.", "err");
-            }
-            btn.disabled = false;
-            btn.textContent = "Enviar";
-          })
-          .withFailureHandler((err) => {
-            showMsg(
-              err && err.message
-                ? err.message
-                : "Erro ao enviar. Tente novamente.",
-              "err"
-            );
-            btn.disabled = false;
-            btn.textContent = "Enviar";
-          })
-          .submitRsvp({ name, answer });
-      });
+        const pad = (n) => String(n).padStart(2, "0");
+
+        function tick() {
+          const now = new Date();
+          let diff = target - now;
+
+          if (diff <= 0) {
+            dd.textContent = "00";
+            hh.textContent = "00";
+            mm.textContent = "00";
+            ss.textContent = "00";
+            if (title) title.textContent = "É hoje! 💍";
+            clearInterval(timer);
+            return;
+          }
+
+          const totalSec = Math.floor(diff / 1000);
+          const days = Math.floor(totalSec / 86400);
+          const hours = Math.floor((totalSec % 86400) / 3600);
+          const mins = Math.floor((totalSec % 3600) / 60);
+          const secs = totalSec % 60;
+
+          dd.textContent = pad(days);
+          hh.textContent = pad(hours);
+          mm.textContent = pad(mins);
+          ss.textContent = pad(secs);
+        }
+
+        tick(); // primeira atualização instantânea
+        const timer = setInterval(tick, 1000);
+      })();
     </script>
   </body>
 </html>
